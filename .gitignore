@@ -211,3 +211,6 @@ __marimo__/
 
 # Database
 *.sqlite3
+
+#arquivo de anotações                                                        
+estudos.txt
