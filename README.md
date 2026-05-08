@@ -1,2 +1,2 @@
-# django_local_library
-Local Library website written in Django
+# django_local_library REVAMPED
+Local Library website written in Django + Vue + TypeScript 

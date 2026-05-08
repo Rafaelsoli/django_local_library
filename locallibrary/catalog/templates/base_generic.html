@@ -21,8 +21,37 @@
           {% block sidebar %}
             <ul class="sidebar-nav">
               <li><a href="{% url 'index' %}">Home</a></li>
-              <li><a href="{% url 'books' %}">All books</a></li>
-              <li><a href="{% url 'authors'%}">All authors</a></li>
+              <li><a href="{% url 'books' %}">Livros</a></li>
+              <li><a href="{% url 'authors'%}">Autores</a></li>
+            </ul>
+            <ul class="sidebar-nav">
+            {% if user.is_authenticated %}
+                <li>Usuário: {{ user.get_username }}</li>
+
+                <li><a href="{% url 'my-borrowed' %}">Meus Alugados</a></li>
+
+                <li>
+                  <form id="logout-form" method="post" action="{% url 'admin:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-link">Sair</button>
+                  </form>
+                </li>
+                {% else %}
+                <li><a href="{% url 'login' %}?next={{ request.path }}">Login</a></li>
+              {% endif %}
+            </ul>
+            <ul class="sidebar-nav">
+              {% if user.is_staff %}
+                <!-- se for staff (librarian) pode ver toodos os livros alugados, aqui a gente adiciona um titulo com o cargo da pessoa e um botão para ver todos os livros url = all-borrowed-->
+                  <li>Admin</li>
+                  <li><a href="{% url 'all-borrowed' %}">Todos Alugados</a></li>
+                  {% if perms.catalog.add_author %}
+                    <li><a href="{% url 'author-create' %}">Criar autor</a></li>
+                  {% endif %}
+                  {% if perms.catalog.add_book %}
+                    <li><a href="{% url 'book-create' %}">Criar livro</a></li>
+                  {% endif %}
+                {% endif %}
             </ul>
           {% endblock %}
         </div>
@@ -32,13 +61,13 @@
               <div class="pagination">
                   <span class="page-links">
                       {% if page_obj.has_previous %}
-                          <a href="{{ request.path }}?page={{ page_obj.previous_page_number }}">previous</a>
+                          <a href="{{ request.path }}?page={{ page_obj.previous_page_number }}">anterior</a>
                       {% endif %}
                       <span class="page-current">
-                          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                          Page {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
                       </span>
                       {% if page_obj.has_next %}
-                          <a href="{{ request.path }}?page={{ page_obj.next_page_number }}">next</a>
+                          <a href="{{ request.path }}?page={{ page_obj.next_page_number }}">próximo</a>
                       {% endif %}
                   </span>
               </div>
