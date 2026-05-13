@@ -2,6 +2,8 @@ from django.db import models
 from django.urls import reverse
 from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
+from django.conf import settings
+from datetime import date
 import uuid
 # Create your models here.0
 
@@ -33,7 +35,7 @@ class Genre(models.Model):
 
 class Book(models.Model):
     title = models.CharField(max_length=200)
-    author = models.ForeignKey('Author', on_delete=models.RESTRICT, null=True)
+    author = models.ForeignKey('Author', on_delete=models.RESTRICT, null=True, related_name='book_set')
     summary = models.TextField(
         max_length=1000,
         help_text="enter a brief description of the book"
@@ -58,6 +60,7 @@ class BookInstance(models.Model):
     book = models.ForeignKey('Book', on_delete = models.RESTRICT, null = True)
     imprint = models.CharField(max_length=200)
     due_back = models.DateField(null=True, blank=True)
+    borrower = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
     LOAN_STATUS = (
         ('m', 'Maintenance'),
@@ -76,17 +79,21 @@ class BookInstance(models.Model):
 
     class Meta:
         ordering = ['due_back']
+        permissions = (("can_mark_returned", "Set book as returned"),)
 
     # implementar mostrar o livro, status, data de entrega e o id
     def __str__(self):
         return f'{self.id} ({self.book.title})'
+    
+    def is_overdue(self):
+        return bool(self.due_back and date.today() > self.due_back)
     
 class Author(models.Model):
     #"modelo representando o autor"
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     date_of_birth = models.DateField(null=True, blank=True)
-    date_of_death = models.DateField('Died', null=True, blank=True)
+    date_of_death = models.DateField('died', null=True, blank=True)
 
 
     def get_absolute_url(self):

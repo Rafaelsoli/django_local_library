@@ -1,17 +1,18 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-  <h1>Local Library Home</h1>
+  <h1>Home da Biblioteca Local</h1>
   <p>
-    Welcome to LocalLibrary, a website developed by
-    <em>Mozilla Developer Network</em>!
+    Bem vindo à Biblioteca Local! um site desenvolvido com intuíto de estudos em djago.
+    <em>tutorial da Mozilla Developer Network</em>!
   </p>
-  <h2>Dynamic content</h2>
-  <p>The library has the following record counts:</p>
+  <h2>Conteúdo Dinâmico</h2>
+  <p>Essa Biblioteca tem os seguintes contadores:</p>
   <ul>
-    <li><strong>Books:</strong> {{ num_books }}</li>
-    <li><strong>Copies:</strong> {{ num_instances }}</li>
-    <li><strong>Copies available:</strong> {{ num_instances_available }}</li>
-    <li><strong>Authors:</strong> {{ num_authors }}</li>
+    <li><strong>Livros:</strong> {{ num_books }}</li>
+    <li><strong>Cópias:</strong> {{ num_instances }}</li>
+    <li><strong>Cópias disponíveis:</strong> {{ num_instances_available }}</li>
+    <li><strong>Autores:</strong> {{ num_authors }}</li>
+    <li><strong>Visítas:</strong> {{num_visits}}</li>
   </ul>
 {% endblock %}

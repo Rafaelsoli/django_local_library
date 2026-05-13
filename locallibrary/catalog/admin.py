@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth.models import User
 from .models import Author, Genre, Book, BookInstance
 # Register your models here.
 #admin.site.register(Book)
@@ -12,6 +13,9 @@ class BooksInstanceInLine(admin.TabularInline):
 
 class BooksInLine(admin.TabularInline):
     model = Book
+
+
+
 
 @admin.register(Author)
 class AuthorAdmin(admin.ModelAdmin):
@@ -37,7 +41,7 @@ class BookAdmin(admin.ModelAdmin):
 
 @admin.register(BookInstance)
 class BookInstanceAdmin(admin.ModelAdmin):
-    list_display = ('book', 'status', 'due_back', 'id')
+    list_display = ('book', 'status', 'borrower', 'due_back', 'id')
     list_filter = ('status', 'due_back')
 
     fieldsets = (
@@ -45,6 +49,6 @@ class BookInstanceAdmin(admin.ModelAdmin):
             'fields': ('book', 'imprint', 'id')
         }),
         ('Availability', {
-            'fields': ('status', 'due_back')
+            'fields': ('status', 'due_back', 'borrower')
         }),
     )
