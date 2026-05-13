@@ -1,5 +1,18 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
+import axios from 'axios';
+import { ref } from 'vue';
+const name = ref("");
+
+// const isAuthenticated = async () => {
+//   try {
+//     const response = await axios.get('/me')
+//     name.value = response.data.username;
+//   } catch (error) {
+//     console.error('Erro ao verificar status de autenticação:', error);
+//     return false;
+//   }
+// }
 </script>
 
 <template>
@@ -78,7 +91,7 @@ import { RouterLink } from 'vue-router'
             </RouterLink>
           </li>
 
-    <!-- <li class="nav-item" v-if="!isAuthenticated">
+     <!-- <li class="nav-item" v-if="!isAuthenticated">
             <RouterLink class="nav-link" :to="{ name: 'Alugados' }">
               <span class="nav-link-title"> 
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-login">
@@ -103,23 +116,7 @@ import { RouterLink } from 'vue-router'
                 Todos Alugados 
               </span>
             </RouterLink>
-          </li>
-          <li class="nav-item" v-if="isAuthenticated">
-            <RouterLink class="nav-link" :to="{ name: 'TodosAlugados' }">
-              <span class="nav-link-title"> 
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-login">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M15 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" />
-                    <path d="M21 12h-13l3 -3" />
-                    <path d="M11 15l-3 -3" />
-                </svg>
-                Logout
-              </span>
-            </RouterLink>
-          </li>
-          -->
-
-
+          </li> -->
         </ul>
       </div>
     </div>

@@ -27,6 +27,22 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+# 4. Configurações de segurança de sessão para desenvolvimento
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+# Se estiver usando Cookies/Sessões para login:
+CORS_ALLOW_CREDENTIALS = True
 
 # Application definition
 
@@ -38,10 +54,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'catalog.apps.CatalogConfig',
-    'ninja'
+    'ninja',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

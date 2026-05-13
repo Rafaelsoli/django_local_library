@@ -2,11 +2,36 @@
 from datetime import date
 from typing import Optional
 import uuid
-from ninja import Schema
-    
+from ninja import Field, Schema
+
+class LoginSchema(Schema):
+    username: str
+    password: str
+
+
 class GenreSchema(Schema):
     id: int
     name: str
+
+
+class AuthorIn(Schema):
+    first_name: str
+    last_name: str
+    date_of_birth: Optional[date] = None
+    date_of_death: Optional[date] = None
+
+class BookOutMinimo(Schema):
+    id: int
+    title: str
+    summary: str
+    
+class AuthorOutMinimo(Schema):
+    id: int
+    first_name: str
+    last_name: str
+    date_of_birth: Optional[date] = None
+    date_of_death: Optional[date] = None
+    books: list[BookOutMinimo] = Field(..., alias="book_set")
 
 class AuthorOut(Schema):
     id: int
@@ -15,11 +40,6 @@ class AuthorOut(Schema):
     date_of_birth: Optional[date] = None
     date_of_death: Optional[date] = None
 
-class AuthorIn(Schema):
-    first_name: str
-    last_name: str
-    date_of_birth: Optional[date] = None
-    date_of_death: Optional[date] = None
 
 class BookOut(Schema):
     id: int

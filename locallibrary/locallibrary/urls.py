@@ -21,11 +21,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView
 from ninja import NinjaAPI
-
-api = NinjaAPI()
+from catalog.api.api import api
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', api.urls),
+    path("api/", api.urls),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

@@ -1,13 +1,36 @@
 from ninja import NinjaAPI, Schema
 from ninja.security import django_auth
 from django.shortcuts import get_object_or_404
-from django.http import HttpError
+from ninja.errors import HttpError
 from catalog.models import Book, Author, BookInstance, Genre
 from datetime import date
 from uuid import UUID
 from typing import Optional
 from .schemas.Schemas import *
+from django.contrib.auth import authenticate, login, logout
 api = NinjaAPI()
+# mudarpratruedepois
+
+# ─── Login ────────────────────────────────────────────────────────────────────
+
+@api.post("/login")
+def login_user(request, data: LoginSchema):
+    user = authenticate(request, username=data.username, password=data.password)
+    if user is not None:
+        login(request, user)
+        return {"success": True, "username": user.username}
+    return api.create_response(request, {"error": "Invalid credentials"}, status=401)
+
+@api.post("/logout")
+def logout_user(request):
+    logout(request)
+    return {"success": True}
+
+@api.get("/me")
+def get_me(request):
+    if request.user.is_authenticated:
+        return {"username": request.user.username, "authenticated": True}
+    return {"authenticated": False}
 
 # ─── Books ────────────────────────────────────────────────────────────────────
 
@@ -52,9 +75,10 @@ def delete_book(request, book_id: int):
 def list_authors(request):
     return Author.objects.all()
 
-@api.get("/authors/{author_id}", response=AuthorOut)
+@api.get("/authors/{author_id}", response=AuthorOutMinimo)
 def get_author(request, author_id: int):
-    return get_object_or_404(Author, pk=author_id)
+    author = get_object_or_404(Author.objects.prefetch_related("book_set"), pk=author_id)
+    return author
 
 @api.post("/authors", response=AuthorOut, auth=django_auth)
 def create_author(request, payload: AuthorIn):
