@@ -1,2 +1,2 @@
-# django_local_library REVAMPED
-Local Library website written in Django + Vue + TypeScript 
+# Biblioteca Local com Django
+Projeto de uma biblioteca local com django para fins de pratica e aprendizado no framework e na linguagem python.
