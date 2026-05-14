@@ -8,26 +8,21 @@ const router = useRouter();
 const loading = ref(false);
 const erro = ref('');
 
-// 1. Dados do formulário
 const form = reactive({
-    username: '', // Django usa username por padrão
+    username: '',
     password: ''
 });
 
-// 2. Função de Login
 const handleLogin = async () => {
     loading.value = true;
     erro.value = '';
     
     try {
-        // Envia para o seu @api.post("/login")
         const response = await axios.post('login', {
             username: form.username,
             password: form.password
         });
-
-        if (response.data.success) {
-            // Login ok! Redireciona para a home
+        if (response.data.success) { 
             router.push('/');
         }
     } catch (e: any) {

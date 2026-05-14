@@ -10,7 +10,7 @@ import '@tabler/core/dist/js/tabler.min.js'
 
 axios.defaults.baseURL = 'http://localhost:8000/api/' 
 
-// axios.defaults.withCredentials = true 
+axios.defaults.withCredentials = true 
 
 axios.defaults.xsrfCookieName = 'csrftoken'
 axios.defaults.xsrfHeaderName = 'X-CSRFToken'

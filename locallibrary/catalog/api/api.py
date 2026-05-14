@@ -18,7 +18,7 @@ def login_user(request, data: LoginSchema):
     user = authenticate(request, username=data.username, password=data.password)
     if user is not None:
         login(request, user)
-        return {"success": True, "username": user.username}
+        return {"success": True, "username": user.username,}
     return api.create_response(request, {"error": "Invalid credentials"}, status=401)
 
 @api.post("/logout")
@@ -29,7 +29,7 @@ def logout_user(request):
 @api.get("/me")
 def get_me(request):
     if request.user.is_authenticated:
-        return {"username": request.user.username, "authenticated": True}
+        return {"username": request.user.username, "authenticated": True, "is_admin": request.user.is_staff}
     return {"authenticated": False}
 
 # ─── Books ────────────────────────────────────────────────────────────────────
