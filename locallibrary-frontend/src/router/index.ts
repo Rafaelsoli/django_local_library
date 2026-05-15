@@ -32,6 +32,16 @@ const router = createRouter({
       path: '/login',
       name: 'Login',
       component: () => import('../views/LoginView.vue')
+    },
+    {
+      path: '/Borrowed',
+      name: 'Borrowed',
+      component: () => import('../views/BorrowedView.vue')
+    },
+    {
+      path: '/AllBorrowed',
+      name: 'AllBorrowed',
+      component: () => import('../views/AllBorrowedView.vue')
     }
   ],
 })
