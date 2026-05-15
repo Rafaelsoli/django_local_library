@@ -21,12 +21,22 @@ const estaAutenticado = async () => {
   }
 }
 
+const logout = async () => {
+  try {
+    await axios.post('/logout');
+    name.value = "";
+    isAdmin.value = "";
+  } catch (error) {
+    console.error('Erro ao fazer logout:', error);
+  }
+};
+
 onMounted(estaAutenticado);
 </script>
 
 <template>
 <!-- Sidebar -->
-  <aside class="navbar navbar-vertical navbar-expand-xl position-absolute" data-bs-theme="dark">
+  <aside class="navbar navbar-vertical navbar-expand-xl position-fixed" data-bs-theme="dark">
     <div class="container-fluid">
       <button class="navbar-toggler" type="button">
         <span class="navbar-toggler-icon"></span>
@@ -43,7 +53,7 @@ onMounted(estaAutenticado);
         Local Library
       </h1>
       <div class="collapse navbar-collapse" id="sidebar-menu">
-        <ul class="navbar-nav pt-lg-3">
+        <ul class="navbar-nav pt-lg-3 h-100 d-flex flex-column">
           <li class="nav-item">
             <RouterLink class="nav-link" :to="{ name: 'Home' }">
               <span class="nav-link-title"> 
@@ -86,7 +96,7 @@ onMounted(estaAutenticado);
               </span>
             </RouterLink>
           </li>
-          <li class="nav-item" v-if="!name">
+          <li class="nav-item mt-auto" v-if="!name">
             <RouterLink class="nav-link" :to="{ name: 'Login' }">
               <span class="nav-link-title"> 
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-login">
@@ -124,12 +134,8 @@ onMounted(estaAutenticado);
               </span>
             </RouterLink>
           </li>
-          <li class="nav-item">
-            <li class="nav-link">
-              
-            </li>
-          </li>
-          <li class="nav-item" v-if="name">
+          <!-- queria adicionar um espaço aq -->
+          <li class="nav-item mt-auto" v-if="name">
             <div class="nav-link">  
               <span class="nav-link-title"> 
                 <svg v-if="!isAdmin" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-user">
@@ -148,6 +154,19 @@ onMounted(estaAutenticado);
                   {{name}} ({{isAdmin ? "Admin" : "User"}})
               </span>
             </div>
+          </li>
+          <li class="nav-item" v-if="name">
+            <RouterLink class="nav-link" @click="logout" :to="{ name: 'Home' }">  
+              <span class="nav-link-title"> 
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-logout">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" />
+                  <path d="M9 12h12l-3 -3" />
+                  <path d="M18 15l3 -3" />
+                </svg> 
+                Logout
+              </span>
+            </RouterLink>
           </li>
         </ul>
       </div>

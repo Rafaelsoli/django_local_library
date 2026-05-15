@@ -61,10 +61,12 @@ class BookInstanceOut(Schema):
     status: str
     imprint: str
     due_back: Optional[date] = None
+    titulo_livro: Optional[str] = Field("Sem título", alias="book.title")
 
-    @staticmethod
-    def resolve_book_title(obj):
-        return obj.book.title
+    def resolve_titulo_livro(self, obj):
+        if obj.book and hasattr(obj.book, 'title'):
+            return obj.book.title
+        return "Livro não associado"
 
 class RenewSchema(Schema):
     renewal_date: date
