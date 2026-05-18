@@ -3,7 +3,7 @@ from ninja.security import django_auth
 from django.shortcuts import get_object_or_404
 from ninja.errors import HttpError
 from catalog.models import Book, Author, BookInstance, Genre
-from datetime import date
+from datetime import date, timedelta
 from uuid import UUID
 from typing import Optional
 from .schemas.Schemas import *
@@ -114,11 +114,11 @@ def all_loans(request):
     return BookInstance.objects.filter(status="o").select_related("book")
 
 @api.post("/loans/{instance_id}/renew", auth=django_auth)
-def renew_loan(request, instance_id: UUID, payload: RenewSchema):
+def renew_loan(request, instance_id: UUID):
     instance = get_object_or_404(BookInstance, pk=instance_id)
     if instance.borrower != request.user and not request.user.has_perm("catalog.can_mark_returned"):
         raise HttpError(403, "Sem permissão")
-    instance.due_back = payload.renewal_date
+    instance.due_back = date.today + timedelta(days = 7)
     instance.save()
     return {"success": True}
 

@@ -4,6 +4,7 @@ import axios from 'axios';
 import { onMounted, ref } from 'vue';
 const name = ref("");
 const isAdmin = ref("");
+
 const estaAutenticado = async () => {
   try {
     const response = await axios.get('/me');

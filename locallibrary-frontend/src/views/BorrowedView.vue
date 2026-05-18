@@ -2,9 +2,8 @@
 import SidebarComponent from '@/components/SidebarComponent.vue';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-
 interface Alugados {
-    id: number;
+    id: string;
     due_back: string;
     status: string;
     imprint: string;
@@ -26,6 +25,15 @@ const fetchAlugados = async () => {
     }
 };
 
+const renovar = async (id: string) => {
+    try{
+        const resposta = await axios.post(`loans/${id}/renew`)
+        console.log("Livro renovado com sucesso:", resposta.data);
+        await fetchAlugados()
+    }catch(error){
+        console.error("Erro ao renovar livro:", error);
+    }
+}
 onMounted(fetchAlugados);
 </script>
 
@@ -59,6 +67,9 @@ onMounted(fetchAlugados);
                         </div>
                         <div class="card-footer text-secondary small bg-transparent border-top-0 pt-0">
                             Devolução: <span class="text-body fw-bold">{{ alugados.due_back }}</span>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-primary" @click="renovar(alugados.id)">Renovar</button>
                         </div>
                     </div>
                 </div>
