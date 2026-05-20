@@ -40,6 +40,8 @@ class AuthorOut(Schema):
     date_of_birth: Optional[date] = None
     date_of_death: Optional[date] = None
 
+class GenreOut(Schema):
+    name: str
 
 class BookOut(Schema):
     id: int
@@ -54,7 +56,7 @@ class BookIn(Schema):
     summary: str
     isbn: str
     author_id: int
-    genre_ids: list[int]
+    genre_ids: list[str]
 
 class BookInstanceOut(Schema):
     id: uuid.UUID

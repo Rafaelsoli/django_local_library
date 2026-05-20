@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import SidebarComponent from '@/components/SidebarComponent.vue';
+import AddbookComp from '@/components/AddbookComp.vue';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 interface Alugados {
@@ -12,6 +13,13 @@ interface Alugados {
 
 const source = ref<Alugados[]>([]);
 const loading = ref(true);
+
+const getCookie = (name: string): string | null => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+    return null;
+};
 
 const fetchAlugados = async () => {
     try {
@@ -27,7 +35,10 @@ const fetchAlugados = async () => {
 
 const renovar = async (id: string) => {
     try{
-        const resposta = await axios.post(`loans/${id}/renew`)
+        const token = getCookie('csrftoken');
+        const resposta = await axios.post(`loans/${id}/renew`, {}, {withCredentials: true, headers: {
+                    'X-CSRFToken': token || '' 
+                }})
         console.log("Livro renovado com sucesso:", resposta.data);
         await fetchAlugados()
     }catch(error){

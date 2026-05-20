@@ -11,7 +11,7 @@ from django.contrib.auth import authenticate, login, logout
 api = NinjaAPI()
 # mudarpratruedepois
 
-# ─── Login ────────────────────────────────────────────────────────────────────
+# ─── Logsin ────────────────────────────────────────────────────────────────────
 
 @api.post("/login")
 def login_user(request, data: LoginSchema):
@@ -32,7 +32,11 @@ def get_me(request):
         return {"username": request.user.username, "authenticated": True, "is_admin": request.user.is_staff}
     return {"authenticated": False}
 
-# ─── Books ────────────────────────────────────────────────────────────────────
+# ─── lrivo ────────────────────────────────────────────────────────────────────
+
+@api.get("/genres", response=list[GenreOut])
+def list_genres(request):
+    return Genre.objects.all()
 
 @api.get("/books", response=list[BookOut])
 def list_books(request):
@@ -50,7 +54,8 @@ def create_book(request, payload: BookIn):
         isbn=payload.isbn,
         author_id=payload.author_id,
     )
-    book.genre.set(payload.genre_ids)
+    genres = Genre.objects.filter(name__in=payload.genre_ids)
+    book.genre.set(genres)
     return book
 
 @api.put("/books/{book_id}", response=BookOut, auth=django_auth)
@@ -65,11 +70,14 @@ def update_book(request, book_id: int, payload: BookIn):
 @api.delete("/books/{book_id}", auth=django_auth)
 def delete_book(request, book_id: int):
     book = get_object_or_404(Book, pk=book_id)
-    book.delete()
+    if book.bookinstance_set.filter(status = "o").exists():
+        raise HttpError(400, "Não é possível deletar um livro que tem cópias emprestadas")
+    else:
+        book.delete()
     return {"success": True}
 
 
-# ─── Authors ──────────────────────────────────────────────────────────────────
+# ─── Aurotes ──────────────────────────────────────────────────────────────────
 
 @api.get("/authors", response=list[AuthorOut])
 def list_authors(request):
@@ -95,11 +103,14 @@ def update_author(request, author_id: int, payload: AuthorIn):
 @api.delete("/authors/{author_id}", auth=django_auth)
 def delete_author(request, author_id: int):
     author = get_object_or_404(Author, pk=author_id)
-    author.delete()
+    if author.book_set.exists():
+        raise HttpError(400, "Não é possível deletar um autor que tem livros associados")
+    else:
+        author.delete()
     return {"success": True}
 
 
-# ─── Loans ────────────────────────────────────────────────────────────────────
+# ─── Alumagentos ────────────────────────────────────────────────────────────────────
 
 @api.get("/loans/mine", response=list[BookInstanceOut], auth=django_auth)
 def my_loans(request):
@@ -118,7 +129,7 @@ def renew_loan(request, instance_id: UUID):
     instance = get_object_or_404(BookInstance, pk=instance_id)
     if instance.borrower != request.user and not request.user.has_perm("catalog.can_mark_returned"):
         raise HttpError(403, "Sem permissão")
-    instance.due_back = date.today + timedelta(days = 7)
+    instance.due_back = date.today() + timedelta(days = 7)
     instance.save()
     return {"success": True}
 
