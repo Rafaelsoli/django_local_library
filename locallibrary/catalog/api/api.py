@@ -32,11 +32,17 @@ def get_me(request):
         return {"username": request.user.username, "authenticated": True, "is_admin": request.user.is_staff}
     return {"authenticated": False}
 
-# ─── lrivo ────────────────────────────────────────────────────────────────────
-
+# ─── Generos ──────────────────────────────────────────────────────────────────
 @api.get("/genres", response=list[GenreOut])
 def list_genres(request):
     return Genre.objects.all()
+
+@api.post("/genres", response=GenreOut, auth=django_auth)
+def create_genre(request, payload: GenreSchema):
+    return Genre.objects.create(**payload.dict())  
+
+
+# ─── lrivo ────────────────────────────────────────────────────────────────────
 
 @api.get("/books", response=list[BookOut])
 def list_books(request):
@@ -111,6 +117,16 @@ def delete_author(request, author_id: int):
 
 
 # ─── Alumagentos ────────────────────────────────────────────────────────────────────
+@api.post("/loans/{instance_id}/borrow", auth=django_auth)
+def borrow_book(request, instance_id: UUID):
+    instance = get_object_or_404(BookInstance, pk=instance_id)
+    if instance.status != "a":
+        raise HttpError(400, "Livro não disponível para empréstimo")
+    instance.status = "o"
+    instance.borrower = request.user
+    instance.due_back = date.today() + timedelta(days=7)
+    instance.save()
+    return {"success": True}
 
 @api.get("/loans/mine", response=list[BookInstanceOut], auth=django_auth)
 def my_loans(request):
@@ -132,6 +148,11 @@ def renew_loan(request, instance_id: UUID):
     instance.due_back = date.today() + timedelta(days = 7)
     instance.save()
     return {"success": True}
+
+@api.get("/books/{book_id}/instances", response=list[BookInstanceSchema])
+def get_book_instances(request, book_id: int):
+    instances = BookInstance.objects.filter(book_id=book_id)
+    return instances
 
 # catalog/api.py
 

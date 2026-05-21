@@ -5,12 +5,16 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
 const mostrarModal = ref(false)
+const mostrarConfirmacao = ref(false)
+const livroSelecionadoId = ref<number | null>(null)
+
 const name = ref("");
 const isAdmin = ref("");
 const books = ref<Book[]>([]);
 const loading = ref(true);
 const erro = ref('');
 const erroMensagem = ref<string | null>(null)
+const acertoMensagem = ref<string | null>(null)
 
 const getCookie = (name: string): string | null => {
     const value = `; ${document.cookie}`;
@@ -65,23 +69,36 @@ const fetchBooks = async () => {
   }
 };
 
-const excluirLivros = async (book_id: number) => {
-  if (!confirm("Tem certeza que deseja excluir este livro?")) return;
+const prepararExclusao = (book_id: number) => {
+  livroSelecionadoId.value = book_id;
+  mostrarConfirmacao.value = true;
+};
+
+const excluirLivroConfirmado = async () => {
+  if (!livroSelecionadoId.value) return;
+
   try {
     const csrfToken = getCookie('csrftoken');
-    const resposta = await axios.delete(`books/${book_id}`, {
+    const resposta = await axios.delete(`books/${livroSelecionadoId.value}`, {
       withCredentials: true,
       headers: {
         'X-CSRFToken': csrfToken || ''
       }
     });
     console.log("Livro excluído com sucesso:", resposta.data);
+    acertoMensagem.value = 'Livro excluído com sucesso!';
+    // Fecha o modal e limpa o ID
+    mostrarConfirmacao.value = false;
+    livroSelecionadoId.value = null;
+    
     await fetchBooks();
-  }catch (e) {
-    erroMensagem.value = 'Erro ao excluir o livro. Por favor, tente novamente.';
+  } catch (e) {
+    mostrarConfirmacao.value = false;
+    erroMensagem.value = 'Erro ao excluir o livro. Ainda há cópias alugadas.';
     console.log("erro em excluir livro");
   }
 }
+
 onMounted(fetchBooks);
 onMounted(estaAutenticado);
 </script>
@@ -108,6 +125,20 @@ onMounted(estaAutenticado);
                 {{erroMensagem}}
                 <a class="btn-close" data-bs-dismiss="alert" aria-label="close" @click="erroMensagem = ''"></a>
               </div>
+              <div class="alert alert-success alert-dismissible" role="alert" v-if="acertoMensagem">
+              <div class="d-flex">
+                <div>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24"
+                    height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                    fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M5 12l5 5l10 -10" />
+                  </svg>
+                </div>
+                {{ acertoMensagem }}
+                <a class="btn-close" data-bs-dismiss="alert" aria-label="close" @click="acertoMensagem = ''"></a>
+              </div>
+            </div>
               <h1 class="page-title">Livros</h1>
               <h4 class="page-subtitle text-muted">Livros existentes na biblioteca:</h4>
               <button class="btn btn-primary btn-ghost" @click="mostrarModal = true" v-if="isAdmin">
@@ -122,11 +153,11 @@ onMounted(estaAutenticado);
           </div>
         </div>
       </div>
-      <AddbookComp v-if="mostrarModal" 
-      @fechar="mostrarModal = false" @salvar="fetchBooks"></AddbookComp>
+      
+      <AddbookComp v-if="mostrarModal" @fechar="mostrarModal = false" @salvar="fetchBooks" @salvarLivro="fetchBooks"/>
+      
       <div class="page-body">
         <div class="container-xl">
-          <!-- Alerta de Erro -->
           <div v-if="erro" class="alert alert-danger">{{ erro }}</div>
 
           <div class="card">
@@ -144,13 +175,11 @@ onMounted(estaAutenticado);
                 <tbody>
                   <!-- Loader -->
                   <tr v-if="loading">
-                    <td colspan="4" class="text-center py-4">
+                    <td colspan="5" class="text-center py-4">
                       <div class="spinner-border spinner-border-sm text-secondary"></div>
                       Carregando acervo...
                     </td>
                   </tr>
-
-                  <!-- Lista de Livros -->
                   <tr v-for="book in books" :key="book.id">
                     <td>
                       <div class="font-weight-medium">{{ book.title }}</div>
@@ -168,7 +197,7 @@ onMounted(estaAutenticado);
                       </router-link>
                     </td>
                     <td v-if="isAdmin">
-                      <button class="btn btn-primary btn-ghost btn-hover-ghost" @click="excluirLivros(book.id)">
+                      <button class="btn btn-primary btn-ghost btn-hover-ghost" @click="prepararExclusao(book.id)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-trash">
                           <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                           <path d="M4 7l16 0" />
@@ -180,15 +209,52 @@ onMounted(estaAutenticado);
                       </button>
                     </td>
                   </tr>
-
-                  <!-- Caso não existam livros -->
+                  
                   <tr v-if="!loading && books.length === 0">
-                    <td colspan="4" class="text-center text-muted py-4">
+                    <td colspan="5" class="text-center text-muted py-4">
                       Nenhum livro cadastrado.
                     </td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div 
+    class="modal modal-blur fade show d-block" 
+    tabindex="-1" 
+    role="dialog" 
+    v-if="mostrarConfirmacao"
+    style="background: rgba(0,0,0,0.4);"
+  >
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <button type="button" class="btn-close" @click="mostrarConfirmacao = false"></button>
+        <div class="modal-status bg-danger"></div>
+        <div class="modal-body text-center py-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M12 9v2m0 4v.01" />
+            <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+          </svg>
+          <h3>Tem Certeza?</h3>
+          <div class="text-secondary">
+            Realmente deseja excluir este livro? Essa ação não pode ser desfeita.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="w-100">
+            <div class="row">
+              <div class="col">
+                <button type="button" class="btn w-100" @click="mostrarConfirmacao = false"> Cancelar </button>
+              </div>
+              <div class="col">
+                <button type="button" class="btn btn-danger w-100" @click="excluirLivroConfirmado"> Excluir </button>
+              </div>
             </div>
           </div>
         </div>

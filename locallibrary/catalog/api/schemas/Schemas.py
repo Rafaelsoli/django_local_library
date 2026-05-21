@@ -12,7 +12,11 @@ class LoginSchema(Schema):
 class GenreSchema(Schema):
     id: int
     name: str
-
+class BookInstanceSchema(Schema):
+    id: uuid.UUID
+    imprint: str
+    status: str
+    due_back: Optional[date] = None
 
 class AuthorIn(Schema):
     first_name: str

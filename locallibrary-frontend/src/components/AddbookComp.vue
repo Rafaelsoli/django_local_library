@@ -28,6 +28,7 @@ interface Genre {
 }
 const emit = defineEmits<{
   (e: 'fechar'): void
+  (e: 'salvarLivro'): void
 }>()
 
 const form = ref<LivroForm>({
@@ -80,6 +81,7 @@ const salvar = async () => {
     
     limparFormulario()
     emit('fechar')
+    emit('salvarLivro')
   } catch (error) {
     console.error('agora deu o caraio', error)
   }
@@ -126,13 +128,37 @@ const limparFormulario = () => {
             </div>
 
             <div class="col-12 mb-3">
-              <label class="form-label">Gênero</label>
-              <select v-model="form.genre_ids" class="form-select" multiple>
-                <option value="" disabled selected>Selecione um gênero...</option>
-                <option v-for="gen in genres" :key="gen.name" :value="gen.name">
-                  {{ gen.name }}
-                </option>
-              </select>
+              <label class="form-label">Gêneros</label>
+              <div class="dropdown">
+                <button 
+                  class="form-select text-start" 
+                  type="button" 
+                  id="dropdownGeneros" 
+                  data-bs-toggle="dropdown" 
+                  aria-expanded="false"
+                >
+                  {{ form.genre_ids.length > 0 ? `${form.genre_ids.length} selecionado(s)` : 'Selecione os gêneros...' }}
+                </button>
+                
+                <!-- Menu que abre com os checkboxes -->
+                <ul class="dropdown-menu w-100 p-2" aria-labelledby="dropdownGeneros" style="max-height: 200px; overflow-y: auto;">
+                  <li v-for="gen in genres" :key="gen.name" class="mb-1">
+                    <label class="dropdown-item d-flex align-items-center gap-2 m-0 p-1 rounded cursor-pointer">
+                      <!-- O Vue gerencia arrays automaticamente com checkboxes se usarem o mesmo v-model -->
+                      <input 
+                        type="checkbox" 
+                        :value="gen.name" 
+                        v-model="form.genre_ids" 
+                        class="form-check-input m-0"
+                      >
+                      <span class="form-check-label">{{ gen.name }}</span>
+                    </label>
+                  </li>
+                  <li v-if="genres.length === 0" class="text-muted text-center p-2">
+                    Nenhum gênero encontrado
+                  </li>
+                </ul>
+              </div>
             </div>
 
             <div class="col-12 mb-3">
