@@ -10,8 +10,8 @@ class LoginSchema(Schema):
 
 
 class GenreSchema(Schema):
-    id: int
     name: str
+    
 class BookInstanceSchema(Schema):
     id: uuid.UUID
     imprint: str
