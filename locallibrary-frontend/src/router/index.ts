@@ -42,6 +42,11 @@ const router = createRouter({
       path: '/AllBorrowed',
       name: 'AllBorrowed',
       component: () => import('../views/AllBorrowedView.vue')
+    },
+    {
+      path: '/Generos',
+      name: 'Generos',
+      component: () => import('../views/GenerosView.vue')
     }
   ],
 })

@@ -3,7 +3,7 @@ from ninja.security import django_auth
 from django.shortcuts import get_object_or_404
 from ninja.errors import HttpError
 from catalog.models import Book, Author, BookInstance, Genre
-from datetime import date
+from datetime import date, timedelta
 from uuid import UUID
 from typing import Optional
 from .schemas.Schemas import *
@@ -11,7 +11,7 @@ from django.contrib.auth import authenticate, login, logout
 api = NinjaAPI()
 # mudarpratruedepois
 
-# ─── Login ────────────────────────────────────────────────────────────────────
+# ─── Logsin ────────────────────────────────────────────────────────────────────
 
 @api.post("/login")
 def login_user(request, data: LoginSchema):
@@ -32,7 +32,17 @@ def get_me(request):
         return {"username": request.user.username, "authenticated": True, "is_admin": request.user.is_staff}
     return {"authenticated": False}
 
-# ─── Books ────────────────────────────────────────────────────────────────────
+# ─── Generos ──────────────────────────────────────────────────────────────────
+@api.get("/genres", response=list[GenreOut])
+def list_genres(request):
+    return Genre.objects.all()
+
+@api.post("/genres", response=GenreOut, auth=django_auth)
+def create_genre(request, payload: GenreSchema):
+    return Genre.objects.create(**payload.dict())  
+
+
+# ─── lrivo ────────────────────────────────────────────────────────────────────
 
 @api.get("/books", response=list[BookOut])
 def list_books(request):
@@ -50,7 +60,8 @@ def create_book(request, payload: BookIn):
         isbn=payload.isbn,
         author_id=payload.author_id,
     )
-    book.genre.set(payload.genre_ids)
+    genres = Genre.objects.filter(name__in=payload.genre_ids)
+    book.genre.set(genres)
     return book
 
 @api.put("/books/{book_id}", response=BookOut, auth=django_auth)
@@ -65,11 +76,14 @@ def update_book(request, book_id: int, payload: BookIn):
 @api.delete("/books/{book_id}", auth=django_auth)
 def delete_book(request, book_id: int):
     book = get_object_or_404(Book, pk=book_id)
-    book.delete()
+    if book.bookinstance_set.filter(status = "o").exists():
+        raise HttpError(400, "Não é possível deletar um livro que tem cópias emprestadas")
+    else:
+        book.delete()
     return {"success": True}
 
 
-# ─── Authors ──────────────────────────────────────────────────────────────────
+# ─── Aurotes ──────────────────────────────────────────────────────────────────
 
 @api.get("/authors", response=list[AuthorOut])
 def list_authors(request):
@@ -95,11 +109,24 @@ def update_author(request, author_id: int, payload: AuthorIn):
 @api.delete("/authors/{author_id}", auth=django_auth)
 def delete_author(request, author_id: int):
     author = get_object_or_404(Author, pk=author_id)
-    author.delete()
+    if author.book_set.exists():
+        raise HttpError(400, "Não é possível deletar um autor que tem livros associados")
+    else:
+        author.delete()
     return {"success": True}
 
 
-# ─── Loans ────────────────────────────────────────────────────────────────────
+# ─── Alumagentos ────────────────────────────────────────────────────────────────────
+@api.post("/loans/{instance_id}/borrow", auth=django_auth)
+def borrow_book(request, instance_id: UUID):
+    instance = get_object_or_404(BookInstance, pk=instance_id)
+    if instance.status != "a":
+        raise HttpError(400, "Livro não disponível para empréstimo")
+    instance.status = "o"
+    instance.borrower = request.user
+    instance.due_back = date.today() + timedelta(days=7)
+    instance.save()
+    return {"success": True}
 
 @api.get("/loans/mine", response=list[BookInstanceOut], auth=django_auth)
 def my_loans(request):
@@ -114,13 +141,18 @@ def all_loans(request):
     return BookInstance.objects.filter(status="o").select_related("book")
 
 @api.post("/loans/{instance_id}/renew", auth=django_auth)
-def renew_loan(request, instance_id: UUID, payload: RenewSchema):
+def renew_loan(request, instance_id: UUID):
     instance = get_object_or_404(BookInstance, pk=instance_id)
     if instance.borrower != request.user and not request.user.has_perm("catalog.can_mark_returned"):
         raise HttpError(403, "Sem permissão")
-    instance.due_back = payload.renewal_date
+    instance.due_back = date.today() + timedelta(days = 7)
     instance.save()
     return {"success": True}
+
+@api.get("/books/{book_id}/instances", response=list[BookInstanceSchema])
+def get_book_instances(request, book_id: int):
+    instances = BookInstance.objects.filter(book_id=book_id)
+    return instances
 
 # catalog/api.py
 

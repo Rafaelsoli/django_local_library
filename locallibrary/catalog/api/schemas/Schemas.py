@@ -12,7 +12,11 @@ class LoginSchema(Schema):
 class GenreSchema(Schema):
     id: int
     name: str
-
+class BookInstanceSchema(Schema):
+    id: uuid.UUID
+    imprint: str
+    status: str
+    due_back: Optional[date] = None
 
 class AuthorIn(Schema):
     first_name: str
@@ -40,6 +44,8 @@ class AuthorOut(Schema):
     date_of_birth: Optional[date] = None
     date_of_death: Optional[date] = None
 
+class GenreOut(Schema):
+    name: str
 
 class BookOut(Schema):
     id: int
@@ -54,7 +60,7 @@ class BookIn(Schema):
     summary: str
     isbn: str
     author_id: int
-    genre_ids: list[int]
+    genre_ids: list[str]
 
 class BookInstanceOut(Schema):
     id: uuid.UUID
